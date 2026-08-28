@@ -1,0 +1,298 @@
+.settings-container {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--bg-page, #ffffff);
+    color: var(--text-primary, #111111);
+    position: relative;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-body {
+    flex: 1;
+    padding: 24px 20px calc(env(safe-area-inset-bottom, 0px) + 50px) 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 620px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.settings-toast-banner {
+    background-color: #2e7d32;
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInSlide 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.section-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--primary-red, #a40019);
+    background-color: rgba(164, 0, 25, 0.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.6px;
+}
+
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary, #111111);
+    letter-spacing: 0.3px;
+}
+
+.section-separator-line {
+    height: 1px;
+    background: var(--border-color, #e8e8e8);
+    margin: 4px 0;
+}
+
+/* Card Groups */
+.options-card-group,
+.info-card-group {
+    background-color: var(--card-surface, #ffffff);
+    border: 1.5px solid var(--border-color, #e6e6e6);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.option-row-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.setting-option-btn {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+    font-family: var(--font-family);
+}
+
+.setting-option-btn:hover {
+    background-color: rgba(164, 0, 25, 0.03);
+}
+
+.setting-option-btn.selected {
+    background-color: var(--option-selected-bg, #fffbf2);
+}
+
+.option-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.option-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: var(--icon-bg, #f3f3f3);
+    color: var(--primary-red, #a40019);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.option-icon-box.active-icon {
+    background-color: var(--primary-red, #a40019);
+    color: #ffffff;
+}
+
+.option-flag-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: var(--icon-bg, #f3f3f3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.option-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.option-main-title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text-primary, #111111);
+}
+
+.option-sub-title {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #666666);
+    line-height: 1.35;
+}
+
+.custom-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color, #c8c8c8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    margin-left: 12px;
+}
+
+.custom-radio.checked {
+    border-color: var(--primary-red, #a40019);
+}
+
+.radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--primary-red, #a40019);
+}
+
+.item-divider {
+    height: 1px;
+    background-color: var(--border-color, #e8e8e8);
+    margin: 0 16px;
+}
+
+/* Info Rows */
+.info-row {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.info-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background-color: rgba(164, 0, 25, 0.08);
+    color: var(--primary-red, #a40019);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary, #777777);
+}
+
+.info-value {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary, #111111);
+}
+
+/* Action Buttons Group */
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-family: var(--font-family);
+}
+
+.action-btn.primary-action {
+    background-color: var(--primary-red, #a40019);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 3px 8px rgba(164, 0, 25, 0.25);
+}
+
+.action-btn.primary-action:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.action-btn.primary-action:active {
+    transform: scale(0.98);
+}
+
+.action-btn.secondary-action {
+    background-color: transparent;
+    color: var(--text-secondary, #666666);
+    border: 1.5px solid var(--border-color, #d4d4d4);
+}
+
+.action-btn.secondary-action:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: var(--text-primary, #111111);
+}
+
+.action-btn.secondary-action:active {
+    transform: scale(0.98);
+}
+
