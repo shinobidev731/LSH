@@ -54,8 +54,6 @@ import {
         return hymnData.Index || [];
     };
 
-    const currentList = getActiveList();
-    const isYoruba = language === 'YOR';
     const normalizeText = (text) => {
     if (!text) return '';
     return text
@@ -70,12 +68,6 @@ import {
       .trim();
   };
 
-    const filteredList = currentList.filter((item) => {
-        const titleMatch = item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase());
-        const yorubaTitleMatch = item.titleYoruba && item.titleYoruba.toLowerCase().includes(searchQuery.toLowerCase());
-        const idMatch = item.id && item.id.toString().includes(searchQuery);
-        return titleMatch || yorubaTitleMatch || idMatch;
-    });
   const currentList = getActiveList();
   const isYoruba = language === 'YOR';
   const cleanQuery = normalizeText(searchQuery);
