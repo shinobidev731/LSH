@@ -2,59 +2,66 @@ import { useState, useRef } from 'react';
 import './hymnLists.css';
 import { hymnData } from '../data/hymnData';
 import { 
-    Menu, 
-    Search, 
-    Languages, 
-    ChevronLeft, 
-    Trash2, 
-    HeartOff, 
-    Clock, 
-    SearchX, 
-    Layers 
-    } from 'lucide-react';
-    import MenuDrawer from './menuDrawer';
+  Menu, 
+  Search, 
+  Languages, 
+  ChevronLeft, 
+  Trash2, 
+  HeartOff, 
+  Clock, 
+  SearchX, 
+  Layers 
+} from 'lucide-react';
+import MenuDrawer from './menuDrawer';
 
-    function HymnLists({
-    onSelectHymn = () => {},
-    favoriteIds = [],
-    recentHymnIds = [],
-    onClearFavorites = () => {},
-    onClearRecents = () => {},
-    language = 'ENG',
-    onToggleLanguage = () => {},
-    onOpenSettings = () => {}
-    }) {
-    const [activeTab, setActiveTab] = useState('Index');
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const searchInputRef = useRef(null);
-    const tabs = ['Index', 'Categories', 'Recents'];
+function HymnLists({
+  onSelectHymn = () => {},
+  favoriteIds = [],
+  recentHymnIds = [],
+  onClearFavorites = () => {},
+  onClearRecents = () => {},
+  language = 'ENG',
+  onToggleLanguage = () => {},
+  onOpenSettings = () => {}
+}) {
+  const [activeTab, setActiveTab] = useState('Index');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [slideDirection, setSlideDirection] = useState('none');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const searchInputRef = useRef(null);
 
-    const getActiveList = () => {
-        if (selectedCategory) {
-        return (hymnData.Index || []).filter(
-            (hymn) =>
-            hymn.categoryId === selectedCategory.id ||
-            hymn.category === selectedCategory.title
-        );
-        }
-        if (activeTab === 'Categories') {
-        return hymnData.Categories || [];
-        }
-        if (activeTab === 'Favorites') {
-        return (hymnData.Index || []).filter((hymn) => favoriteIds.includes(hymn.id));
-        }
-        if (activeTab === 'Recents') {
-        return recentHymnIds
-            .map((id) => (hymnData.Index || []).find((h) => h.id === id))
-            .filter(Boolean);
-        }
-        return hymnData.Index || [];
-    };
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const touchEndX = useRef(null);
+  const touchEndY = useRef(null);
 
-    const normalizeText = (text) => {
+  const tabs = ['Index', 'Categories', 'Recents'];
+
+  const getActiveList = () => {
+    if (selectedCategory) {
+      return (hymnData.Index || []).filter(
+        (hymn) =>
+          hymn.categoryId === selectedCategory.id ||
+          hymn.category === selectedCategory.title
+      );
+    }
+    if (activeTab === 'Categories') {
+      return hymnData.Categories || [];
+    }
+    if (activeTab === 'Favorites') {
+      return (hymnData.Index || []).filter((hymn) => favoriteIds.includes(hymn.id));
+    }
+    if (activeTab === 'Recents') {
+      return recentHymnIds
+        .map((id) => (hymnData.Index || []).find((h) => h.id === id))
+        .filter(Boolean);
+    }
+    return hymnData.Index || [];
+  };
+
+  const normalizeText = (text) => {
     if (!text) return '';
     return text
       .toLowerCase()
@@ -80,300 +87,370 @@ import {
     return idMatch || titleMatch || yorubaTitleMatch;
   });
 
-    const handleCardClick = (item) => {
-        if (activeTab === 'Categories' && !selectedCategory) {
-        setSelectedCategory(item);
-        setSearchQuery('');
-        } else {
-        onSelectHymn(item);
-        }
-    };
+  const switchTab = (newTab, direction = 'none') => {
+    if (newTab === activeTab && !selectedCategory) return;
+    setSlideDirection(direction);
+    setActiveTab(newTab);
+    setSelectedCategory(null);
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
 
-    const handleBackToMain = () => {
+  const handleTabClick = (tab) => {
+    const currentIndex = tabs.indexOf(activeTab);
+    const targetIndex = tabs.indexOf(tab);
+    const dir = targetIndex >= currentIndex ? 'left' : 'right';
+    switchTab(tab, dir);
+  };
+
+  const handleCardClick = (item) => {
+    if (activeTab === 'Categories' && !selectedCategory) {
+      setSlideDirection('left');
+      setSelectedCategory(item);
+      setSearchQuery('');
+    } else {
+      onSelectHymn(item);
+    }
+  };
+
+  const handleBackToMain = () => {
+    setSlideDirection('right');
+    if (selectedCategory) {
+      setSelectedCategory(null);
+    } else if (activeTab === 'Favorites') {
+      setActiveTab('Index');
+    }
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
+
+  const handleToggleSearch = () => {
+    if (!isSearchOpen) {
+      setIsSearchOpen(true);
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 50);
+    } else if (!searchQuery) {
+      setIsSearchOpen(false);
+    }
+  };
+
+  // Touch Swipe Handlers for smooth gesture navigation
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+
+    const deltaX = touchEndX.current - touchStartX.current;
+    const deltaY = touchEndY.current - touchStartY.current;
+    const minSwipeDistance = 45;
+    const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.25 && Math.abs(deltaX) >= minSwipeDistance;
+
+    if (isHorizontalSwipe) {
+      if (deltaX < 0) {
+        // Swiped Left -> Move forward in tabs
+        if (!selectedCategory && activeTab === 'Index') {
+          switchTab('Categories', 'left');
+        } else if (!selectedCategory && activeTab === 'Categories') {
+          switchTab('Recents', 'left');
+        }
+      } else if (deltaX > 0) {
+        // Swiped Right -> Move backward in tabs or back from subpage
         if (selectedCategory) {
-        setSelectedCategory(null);
+          handleBackToMain();
         } else if (activeTab === 'Favorites') {
-        setActiveTab('Index');
+          handleBackToMain();
+        } else if (activeTab === 'Recents') {
+          switchTab('Categories', 'right');
+        } else if (activeTab === 'Categories') {
+          switchTab('Index', 'right');
         }
-        setSearchQuery('');
-        setIsSearchOpen(false);
-    };
+      }
+    }
 
-    const handleToggleSearch = () => {
-        if (!isSearchOpen) {
-        setIsSearchOpen(true);
-        setTimeout(() => {
-            if (searchInputRef.current) {
-            searchInputRef.current.focus();
-            }
-        }, 50);
-        } else if (!searchQuery) {
-        setIsSearchOpen(false);
-        }
-    };
+    touchStartX.current = null;
+    touchStartY.current = null;
+    touchEndX.current = null;
+    touchEndY.current = null;
+  };
 
-    const isSubPage = Boolean(selectedCategory || activeTab === 'Favorites');
-    const subPageTitle = selectedCategory ? selectedCategory.title : 'FAVORITES';
+  const isSubPage = Boolean(selectedCategory || activeTab === 'Favorites');
+  const subPageTitle = selectedCategory ? selectedCategory.title : 'FAVORITES';
 
-    const renderEmptyState = () => {
-        if (searchQuery.trim()) {
-        return (
-            <div className="empty-state-card">
-            <SearchX size={40} className="empty-icon" />
-            <p className="empty-title">No matching hymns</p>
-            <p className="empty-subtitle">Check your spelling or search by hymn number</p>
-            </div>
-        );
-        }
-        if (selectedCategory) {
-        return (
-            <div className="empty-state-card">
-            <Layers size={40} className="empty-icon" />
-            <p className="empty-title">No hymns in this category</p>
-            </div>
-        );
-        }
-        if (activeTab === 'Favorites') {
-        return (
-            <div className="empty-state-card">
-            <HeartOff size={40} className="empty-icon" />
-            <p className="empty-title">No favorite hymns yet</p>
-            <p className="empty-subtitle">Tap the heart icon on any hymn to save it here</p>
-            </div>
-        );
-        }
-        if (activeTab === 'Recents') {
-        return (
-            <div className="empty-state-card">
-            <Clock size={40} className="empty-icon" />
-            <p className="empty-title">no recent hymns</p>
-            <p className="empty-subtitle">Hymns you open will automatically appear here</p>
-            </div>
-        );
-        }
-        return (
+  const renderEmptyState = () => {
+    if (searchQuery.trim()) {
+      return (
         <div className="empty-state-card">
-            <p className="empty-title">No hymns available</p>
+          <SearchX size={40} className="empty-icon" />
+          <p className="empty-title">No matching hymns</p>
+          <p className="empty-subtitle">Check your spelling or search by hymn number</p>
         </div>
-        );
-    };
-
+      );
+    }
+    if (selectedCategory) {
+      return (
+        <div className="empty-state-card">
+          <Layers size={40} className="empty-icon" />
+          <p className="empty-title">No hymns in this category</p>
+        </div>
+      );
+    }
+    if (activeTab === 'Favorites') {
+      return (
+        <div className="empty-state-card">
+          <HeartOff size={40} className="empty-icon" />
+          <p className="empty-title">No favorite hymns yet</p>
+          <p className="empty-subtitle">Tap the heart icon on any hymn to save it here</p>
+        </div>
+      );
+    }
+    if (activeTab === 'Recents') {
+      return (
+        <div className="empty-state-card">
+          <Clock size={40} className="empty-icon" />
+          <p className="empty-title">no recent hymns</p>
+          <p className="empty-subtitle">Hymns you open will automatically appear here</p>
+        </div>
+      );
+    }
     return (
-        <div className='hymn-container'>
-        <MenuDrawer
-            isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-            onSelectTab={(tab) => {
-            setSelectedCategory(null);
-            setSearchQuery('');
-            setIsSearchOpen(false);
-            if (tab === 'Settings') {
-                onOpenSettings();
-            } else if (tabs.includes(tab) || tab === 'Favorites') {
-                setActiveTab(tab);
-            }
-            }}
-        />
+      <div className="empty-state-card">
+        <p className="empty-title">No hymns available</p>
+      </div>
+    );
+  };
 
-        <header className='hymn-header'>
-            {isSubPage ? (
-            <div className='header-top sub-header-top'>
-                <button
-                className='back-btn'
-                onClick={handleBackToMain}
-                aria-label='Go back'
-                >
-                <ChevronLeft size={28} />
-                </button>
-                <h1 className='sub-header-title'>{subPageTitle}</h1>
+  return (
+    <div 
+      className='hymn-container'
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <MenuDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onSelectTab={(tab) => {
+          setSelectedCategory(null);
+          setSearchQuery('');
+          setIsSearchOpen(false);
+          if (tab === 'Settings') {
+            onOpenSettings();
+          } else if (tabs.includes(tab) || tab === 'Favorites') {
+            switchTab(tab, 'none');
+          }
+        }}
+      />
 
-                <div className={`search-toggle-box ${isSearchOpen || searchQuery ? 'expanded' : ''}`}>
-                <button
-                    type="button"
-                    className="search-trigger-btn"
-                    onClick={handleToggleSearch}
-                    aria-label="Toggle search input"
-                >
-                    <Search size={20} />
-                </button>
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder={
-                    selectedCategory
-                        ? `search in ${selectedCategory.title.toLowerCase()}`
-                        : 'search favorites'
-                    }
-                    className='search-input-compact'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchOpen(true)}
-                    onBlur={() => {
-                    if (!searchQuery.trim()) {
-                        setIsSearchOpen(false);
-                    }
-                    }}
-                />
-                </div>
-            </div>
-            ) : (
-            <div className='header-top'>
-                <button
-                aria-label='open menu'
-                className='menu-btn'
-                onClick={() => setIsMenuOpen(true)}
-                >
-                <Menu size={24} />
-                </button>
+      <header className='hymn-header'>
+        {isSubPage ? (
+          <div className='header-top sub-header-top'>
+            <button
+              className='back-btn'
+              onClick={handleBackToMain}
+              aria-label='Go back'
+            >
+              <ChevronLeft size={28} />
+            </button>
+            <h1 className='sub-header-title'>{subPageTitle}</h1>
 
-                <div className={`search-toggle-box ${isSearchOpen || searchQuery ? 'expanded' : ''}`}>
-                <button
-                    type="button"
-                    className="search-trigger-btn"
-                    onClick={handleToggleSearch}
-                    aria-label="Toggle search input"
-                >
-                    <Search size={20} />
-                </button>
-                <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="search hymn # or title"
-                    className='search-input-compact'
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchOpen(true)}
-                    onBlur={() => {
-                    if (!searchQuery.trim()) {
-                        setIsSearchOpen(false);
-                    }
-                    }}
-                />
-                </div>
-            </div>
-            )}
-
-            {!isSubPage && (
-            <nav className='tab-bar'>
-                {tabs.map((tab) => (
-                <button
-                    key={tab}
-                    className={`tab-item ${activeTab === tab ? 'active' : ''}`}
-                    onClick={() => {
-                    setActiveTab(tab);
-                    setSelectedCategory(null);
-                    setSearchQuery('');
+            <div className={`search-toggle-box ${isSearchOpen || searchQuery ? 'expanded' : ''}`}>
+              <button
+                type="button"
+                className="search-trigger-btn"
+                onClick={handleToggleSearch}
+                aria-label="Toggle search input"
+              >
+                <Search size={20} />
+              </button>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={
+                  selectedCategory
+                    ? `search in ${selectedCategory.title.toLowerCase()}`
+                    : 'search favorites'
+                }
+                className='search-input-compact'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchOpen(true)}
+                onBlur={() => {
+                  if (!searchQuery.trim()) {
                     setIsSearchOpen(false);
-                    }}
-                >
-                    {tab}
-                </button>
-                ))}
-            </nav>
-            )}
-        </header>
+                  }
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className='header-top'>
+            <button
+              aria-label='open menu'
+              className='menu-btn'
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
 
-        <main className='hymn-list tab-transition' key={selectedCategory ? selectedCategory.id : activeTab}>
-            {filteredList.length > 0 ? (
-            <>
-                {filteredList.map((item) => {
-                const displayTitle = (isYoruba && item.titleYoruba) ? item.titleYoruba : item.title;
-                const isCategoryCard = activeTab === 'Categories' && !selectedCategory;
+            <div className={`search-toggle-box ${isSearchOpen || searchQuery ? 'expanded' : ''}`}>
+              <button
+                type="button"
+                className="search-trigger-btn"
+                onClick={handleToggleSearch}
+                aria-label="Toggle search input"
+              >
+                <Search size={20} />
+              </button>
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="search hymn # or title"
+                className='search-input-compact'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchOpen(true)}
+                onBlur={() => {
+                  if (!searchQuery.trim()) {
+                    setIsSearchOpen(false);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        )}
 
-                if (isCategoryCard) {
-                    const categoryHymns = (hymnData.Index || []).filter(
-                    (h) => h.categoryId === item.id || h.category === item.title
-                    );
-                    const ids = categoryHymns.map((h) => h.id).sort((a, b) => a - b);
-                    let rangeLabel = item.range ? `hymns ${item.range}` : '';
-                    if (!rangeLabel) {
-                    if (ids.length === 1) {
-                        rangeLabel = `hymn ${ids[0]}`;
-                    } else if (ids.length > 1) {
-                        rangeLabel = `hymns ${ids[0]}-${ids[ids.length - 1]}`;
-                    } else {
-                        rangeLabel = '0 hymns';
-                    }
-                    }
+        {!isSubPage && (
+          <nav className='tab-bar'>
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`tab-item ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => handleTabClick(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+        )}
+      </header>
 
-                    return (
-                    <div
-                        key={item.id}
-                        className="hymn-card category-card"
-                        onClick={() => handleCardClick(item)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            handleCardClick(item);
-                        }
-                        }}
-                    >
-                        <span className='hymn-title'>{displayTitle}</span>
-                        <span className='category-range-text'>{rangeLabel}</span>
-                    </div>
-                    );
+      <main 
+        className={`hymn-list tab-transition-${slideDirection}`} 
+        key={`${selectedCategory ? selectedCategory.id : activeTab}-${slideDirection}`}
+      >
+        {filteredList.length > 0 ? (
+          <>
+            {filteredList.map((item) => {
+              const displayTitle = (isYoruba && item.titleYoruba) ? item.titleYoruba : item.title;
+              const isCategoryCard = activeTab === 'Categories' && !selectedCategory;
+
+              if (isCategoryCard) {
+                const categoryHymns = (hymnData.Index || []).filter(
+                  (h) => h.categoryId === item.id || h.category === item.title
+                );
+                const ids = categoryHymns.map((h) => h.id).sort((a, b) => a - b);
+                let rangeLabel = item.range ? `hymns ${item.range}` : '';
+                if (!rangeLabel) {
+                  if (ids.length === 1) {
+                    rangeLabel = `hymn ${ids[0]}`;
+                  } else if (ids.length > 1) {
+                    rangeLabel = `hymns ${ids[0]}-${ids[ids.length - 1]}`;
+                  } else {
+                    rangeLabel = '0 hymns';
+                  }
                 }
 
                 return (
-                    <div
+                  <div
                     key={item.id}
-                    className="hymn-card"
+                    className="hymn-card category-card"
                     onClick={() => handleCardClick(item)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                      if (e.key === 'Enter' || e.key === ' ') {
                         handleCardClick(item);
-                        }
+                      }
                     }}
-                    >
-                    <div className="hymn-number">{item.id}</div>
+                  >
                     <span className='hymn-title'>{displayTitle}</span>
-                    </div>
+                    <span className='category-range-text'>{rangeLabel}</span>
+                  </div>
                 );
-                })}
+              }
 
-                {/* Clear Action Links */}
-                {!selectedCategory && activeTab === 'Favorites' && favoriteIds.length > 0 && (
-                <div className='clear-action-container'>
-                    <button
-                    className='clear-action-btn'
-                    onClick={onClearFavorites}
-                    >
-                    <Trash2 size={16} />
-                    <span>Clear favorites</span>
-                    </button>
+              return (
+                <div
+                  key={item.id}
+                  className="hymn-card"
+                  onClick={() => handleCardClick(item)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleCardClick(item);
+                    }
+                  }}
+                >
+                  <div className="hymn-number">{item.id}</div>
+                  <span className='hymn-title'>{displayTitle}</span>
                 </div>
-                )}
+              );
+            })}
 
-                {!selectedCategory && activeTab === 'Recents' && recentHymnIds.length > 0 && (
-                <div className='clear-action-container'>
-                    <button
-                    className='clear-action-btn'
-                    onClick={onClearRecents}
-                    >
-                    <Trash2 size={16} />
-                    <span>Clear recent hymns</span>
-                    </button>
-                </div>
-                )}
-            </>
-            ) : (
-            renderEmptyState()
+            {/* Clear Action Links */}
+            {!selectedCategory && activeTab === 'Favorites' && favoriteIds.length > 0 && (
+              <div className='clear-action-container'>
+                <button
+                  className='clear-action-btn'
+                  onClick={onClearFavorites}
+                >
+                  <Trash2 size={16} />
+                  <span>Clear favorites</span>
+                </button>
+              </div>
             )}
-        </main>
 
-        <button
-            className='fab'
-            onClick={onToggleLanguage}
-            aria-label={`Current language is ${language}. Tap to toggle between English and Yoruba`}
-        >
-            <Languages size={22} />
-            <span className='fab-lang-badge'>{language}</span>
-        </button>
-        </div>
-    );
-    }
+            {!selectedCategory && activeTab === 'Recents' && recentHymnIds.length > 0 && (
+              <div className='clear-action-container'>
+                <button
+                  className='clear-action-btn'
+                  onClick={onClearRecents}
+                >
+                  <Trash2 size={16} />
+                  <span>Clear recent hymns</span>
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          renderEmptyState()
+        )}
+      </main>
 
-    export default HymnLists;
+      <button
+        className='fab'
+        onClick={onToggleLanguage}
+        aria-label={`Current language is ${language}. Tap to toggle between English and Yoruba`}
+      >
+        <Languages size={22} />
+        <span className='fab-lang-badge'>{language}</span>
+      </button>
+    </div>
+  );
+}
+
+export default HymnLists;

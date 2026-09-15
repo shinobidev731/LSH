@@ -1,0 +1,28 @@
+{
+  "short_name": "LSH Hymns",
+  "name": "Living Stone Hymns",
+  "description": "Complete Christian Hymnal for The Church of the Living Stone Int'l",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#a40019",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["lifestyle", "books", "education"],
+  "lang": "en",
+  "dir": "ltr"
+}
+

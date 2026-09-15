@@ -393,18 +393,49 @@
     letter-spacing: 0.5px;
 }
 
-/* Tab Transition */
-.tab-transition {
-    animation: fadeInTab 0.2s ease-out;
+/* Tab Transitions & Swipe Animations */
+.tab-transition,
+.tab-transition-none {
+    animation: fadeInTab 0.22s ease-out;
+}
+
+.tab-transition-left {
+    animation: slideInFromRight 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.tab-transition-right {
+    animation: slideInFromLeft 0.25s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @keyframes fadeInTab {
     from {
-        opacity: 0;
+        opacity: 0.6;
         transform: translateY(4px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0.5;
+        transform: translateX(36px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0.5;
+        transform: translateX(-36px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
